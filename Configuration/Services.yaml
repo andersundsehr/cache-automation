@@ -1,0 +1,23 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+  AUS\CacheAutomation\:
+    resource: '../Classes/*'
+    exclude: '../Classes/Domain/Model/*'
+  AUS\CacheAutomation\Service\AutoCacheTagService:
+    public: true
+    arguments:
+      $runtimeCache: '@cache.runtime'
+  AUS\CacheAutomation\SqlParser:
+    public: true
+    arguments:
+      $cache: '@cache.core'
+# TYPO3 >=12
+#  AUS\CacheAutomation\EventListener\AfterCacheableContentIsGeneratedEventListener:
+#    tags:
+#      -
+#        name: event.listener
+#        identifier: a-u-s/cache-automation/after-cacheable-content-is-generated-event-listener
+#        event: TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent

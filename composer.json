@@ -1,0 +1,62 @@
+{
+  "name": "andersundsehr/cache-automation",
+  "description": "Automatically Adds Cache Tags and cache lifetime",
+  "license": [
+    "GPL-2.0-or-later"
+  ],
+  "type": "typo3-cms-extension",
+  "require": {
+    "php": "~8.2.0 || ~8.3.0",
+    "doctrine/dbal": "^2.13",
+    "phpmyadmin/sql-parser": "^5.9",
+    "typo3/cms-core": "^11.5",
+    "typo3/cms-frontend": "^11.5"
+  },
+  "require-dev": {
+    "andersundsehr/resource-watcher": "dev-master",
+    "infection/infection": "^0.27.11",
+    "phpunit/phpunit": "^10.5.14",
+    "pluswerk/grumphp-config": "^6.9.2",
+    "saschaegerer/phpstan-typo3": "^1.10.0",
+    "spatie/phpunit-watcher": "^1.23.6",
+    "ssch/typo3-rector": "^1.8.1",
+    "symfony/var-dumper": "^6.4.4 || ^7.0.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "AUS\\CacheAutomation\\": "Classes/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "AUS\\CacheAutomation\\Tests\\": "Tests/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "ergebnis/composer-normalize": true,
+      "infection/extension-installer": true,
+      "phpro/grumphp": true,
+      "phpstan/extension-installer": true,
+      "pluswerk/grumphp-config": true,
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "cache_automation"
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "@composer bump -D"
+    ],
+    "infection": "infection --only-covered",
+    "test": "@php -d pcov.enabled=1 ./vendor/bin/phpunit",
+    "test:watch": [
+      "Composer\\Config::disableProcessTimeout",
+      "@php -d pcov.enabled=1 ./vendor/bin/phpunit-watcher watch < /dev/tty"
+    ]
+  }
+}

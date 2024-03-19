@@ -1,0 +1,21 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Property AUS\\\\CacheAutomation\\\\SqlParser\\:\\:\\$cache \\(TYPO3\\\\CMS\\\\Core\\\\Cache\\\\Frontend\\\\PhpFrontend\\) does not accept TYPO3\\\\CMS\\\\Core\\\\Cache\\\\Frontend\\\\FrontendInterface\\.$#"
+			count: 1
+			path: Classes/SqlParser.php
+
+		-
+			message: "#^Property PhpMyAdmin\\\\SqlParser\\\\Components\\\\JoinKeyword\\:\\:\\$on \\(array\\<PhpMyAdmin\\\\SqlParser\\\\Components\\\\Condition\\>\\) on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: Classes/SqlParser.php
+
+		-
+			message: "#^Property PhpMyAdmin\\\\SqlParser\\\\Statements\\\\SelectStatement\\:\\:\\$expr \\(array\\<PhpMyAdmin\\\\SqlParser\\\\Components\\\\Expression\\>\\) on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: Classes/SqlParser.php
+
+		-
+			message: "#^Property PhpMyAdmin\\\\SqlParser\\\\Statements\\\\SelectStatement\\:\\:\\$from \\(array\\<PhpMyAdmin\\\\SqlParser\\\\Components\\\\Expression\\>\\) on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: Classes/SqlParser.php
