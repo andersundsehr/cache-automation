@@ -26,6 +26,12 @@ It is capable of handling complex queries, with multiple joins.
 It also hooks into the Result Object, to intercept the result and add the Cache Tags to the Page Cache.
 The `DocrineResult` filters out the rows that have a starttime in the future, so the rows returned are the same as if the starttime condition was still in the query.
 
+## conditional fields
+
+A conditional field is a field that is used in a WHERE condition of any Query.  
+It can be useful to add the field to the cache tag, so the cache is cleared if the field changes.  
+
+
 ### TODO:
 
 - read only mode for Metrics (aus vector extraction in eine extra Extension)

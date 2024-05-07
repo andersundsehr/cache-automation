@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AUS\CacheAutomation\Overwrite;
 
+use AUS\CacheAutomation\Configuration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Context\Context;
 use AUS\CacheAutomation\Dto\SelectBy;
@@ -47,6 +48,10 @@ final class DoctrineResult implements IteratorAggregate, DriverStatement, Driver
         $this->autoCacheTagService ??= AutoCacheTagService::getSingleton();
         if ($this->mainTableName) {
             $this->autoCacheTagService->addUsage($this->mainTableName, $row['uid'] ?? 0);
+        }
+
+        if (!Configuration::get('setCacheLifetimeFromStartAndEndTimes')) {
+            return;
         }
 
         foreach ($this->selectBy->startTimes as $startTimeField) {

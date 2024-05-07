@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AUS\CacheAutomation\Service;
 
+use AUS\CacheAutomation\Configuration;
+use AUS\CacheAutomation\Metrics;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -32,7 +34,7 @@ final class AutoCacheTagService
     private static ?AutoCacheTagService $instance = null;
 
     public function __construct(
-        protected readonly FrontendInterface $runtimeCache,
+        private readonly FrontendInterface $runtimeCache,
     ) {
     }
 
@@ -92,6 +94,12 @@ final class AutoCacheTagService
         }
 
         $tags = $this->createTags();
+
+        Metrics::addTagsToCache($tags);
+        if (Configuration::get('metricsOnly')) {
+            return;
+        }
+
         $typoScriptFrontendController->addCacheTags($tags);
     }
 
@@ -114,7 +122,9 @@ final class AutoCacheTagService
                     $table = 'pageId';
                 }
 
-                $tags[] = $table . '_' . $uid;
+                if (Configuration::get('flushCacheOnUid')) {
+                    $tags[] = $table . '_' . $uid;
+                }
             }
         }
 
@@ -123,7 +133,9 @@ final class AutoCacheTagService
                 continue;
             }
 
-            $tags[] = $table . '--new';
+            if (Configuration::get('flushCacheOnNew')) {
+                $tags[] = $table . '--new';
+            }
         }
 
         foreach ($this->fieldUsages as $table => $fields) {
@@ -134,14 +146,16 @@ final class AutoCacheTagService
             unset($fields['uid']);
 
             foreach (array_keys($fields) as $field) {
-                $tags[] = $table . '-' . $field;
+                if (Configuration::get('flushCacheOnConditionalField')) {
+                    $tags[] = $table . '-' . $field;
+                }
             }
         }
 
         return $tags;
     }
 
-    private function isTableExcluded(string $table): bool
+    public function isTableExcluded(string $table): bool
     {
         if ($GLOBALS['TCA'][$table]['ctrl']['is_static'] ?? false) {
             return true;
@@ -151,7 +165,7 @@ final class AutoCacheTagService
             return true;
         }
 
-        if (str_starts_with($table, 'tt_content')) {
+        if ($table === 'tt_content') {
             // has pageId rule
             return true;
         }
@@ -186,20 +200,17 @@ final class AutoCacheTagService
 
         $this->lifeTime = min($this->lifeTime, GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp') + $cacheTimeout);
 
-        $this->runtimeCache->set('cacheLifeTimeForPage_' . $typoScriptFrontendController->id, $this->lifeTime - GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp')); // TYPO3 12
+        $cacheTimeoutToSet = $this->lifeTime - GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp');
+
+        Metrics::addCacheTime($cacheTimeoutToSet);
+
+        if (Configuration::get('metricsOnly')) {
+            return;
+        }
+
+        $this->runtimeCache->set('cacheLifeTimeForPage_' . $typoScriptFrontendController->id, $cacheTimeoutToSet); // TYPO3 12
 
         $runtimeCache = GeneralUtility::makeInstance(CacheManager::class)->getCache('runtime'); // no DI in Core for Cache in TYPO3 11
-        $runtimeCache->set('core-tslib_fe-get_cache_timeout', $this->lifeTime - GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp')); // TYPO3 11
-    }
-
-    /**
-     * @param list<string>|string $tags
-     */
-    public static function aaa(array|string $tags): void
-    {
-        foreach ((array)$tags as $tag) {
-            $id = GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp') . '.txt';
-            file_put_contents('/app/requestID' . $id, $tag . PHP_EOL, FILE_APPEND);
-        }
+        $runtimeCache->set('core-tslib_fe-get_cache_timeout', $cacheTimeoutToSet); // TYPO3 11
     }
 }

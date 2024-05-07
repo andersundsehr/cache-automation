@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace AUS\CacheAutomation\Hooks;
 
+use AUS\CacheAutomation\Configuration;
+use AUS\CacheAutomation\Metrics;
+use AUS\CacheAutomation\Service\AutoCacheTagService;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\MathUtility;
 
 final class CustomTagFlusher
 {
     /** @var array<string, true> */
     private array $alreadyFlushed = [];
+
+    public function __construct(private readonly AutoCacheTagService $autoCacheTagService)
+    {
+    }
 
     /**
      * @param array<string, mixed> $fieldArray
@@ -21,6 +27,10 @@ final class CustomTagFlusher
 
     public function processDatamap_afterDatabaseOperations(string $status, string $table, int|string $id, array $fieldArray, DataHandler $dataHandler): void
     {
+        if ($this->autoCacheTagService->isTableExcluded($table)) {
+            return;
+        }
+
         match ($status) {
             'new' => $this->new($table),
             'update' => $this->update($table, $fieldArray),
@@ -28,30 +38,58 @@ final class CustomTagFlusher
         };
     }
 
+    /**
+     * clear cache for list pages
+     */
     private function new(string $table): void
     {
-        // TODO use \AUS\CacheAutomation\Service\AutoCacheTagService::isTableExcluded
-        $this->flush($table . '--new');
+        if (!Configuration::get('flushCacheOnNew')) {
+            return;
+        }
+
+        $this->flushTags($table . '--new');
     }
 
     /**
+     * clear cache for list pages where fields are conditional fields
+     *
      * @param array<string, mixed> $fieldArray
      */
     private function update(string $table, array $fieldArray): void
     {
-        // TODO use \AUS\CacheAutomation\Service\AutoCacheTagService::isTableExcluded maybe also isFieldExcluded?
-        foreach (array_keys($fieldArray) as $field) {
-            $this->flush($table . '-' . $field);
-        }
-    }
-
-    private function flush(string $tag): void
-    {
-        if (isset($this->alreadyFlushed[$tag])) {
+        if (!Configuration::get('flushCacheOnConditionalField')) {
             return;
         }
 
-        GeneralUtility::makeInstance(CacheManager::class)->flushCachesByTag($tag);
-        $this->alreadyFlushed[$tag] = true;
+        $tags = [];
+        foreach (array_keys($fieldArray) as $field) {
+            $tags[] = $table . '-' . $field;
+        }
+
+        $this->flushTags(...$tags);
+    }
+
+    private function flushTags(string ...$tags): void
+    {
+        $toFlush = [];
+        foreach ($tags as $tag) {
+            if (isset($this->alreadyFlushed[$tag])) {
+                continue;
+            }
+
+            $this->alreadyFlushed[$tag] = true;
+            $toFlush[] = $tag;
+        }
+
+        if (!$toFlush) {
+            return;
+        }
+
+        Metrics::flushTags($toFlush);
+        if (Configuration::get('metricsOnly')) {
+            return;
+        }
+
+        GeneralUtility::makeInstance(CacheManager::class)->flushCachesByTags($toFlush);
     }
 }

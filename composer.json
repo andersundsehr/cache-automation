@@ -15,12 +15,12 @@
   "require-dev": {
     "andersundsehr/resource-watcher": "dev-master",
     "infection/infection": "^0.27.11",
-    "phpunit/phpunit": "^10.5.14",
-    "pluswerk/grumphp-config": "^6.9.2",
+    "phpunit/phpunit": "^10.5.20",
+    "pluswerk/grumphp-config": "^6.10.0",
     "saschaegerer/phpstan-typo3": "^1.10.0",
     "spatie/phpunit-watcher": "^1.23.6",
     "ssch/typo3-rector": "^1.8.1",
-    "symfony/var-dumper": "^6.4.4 || ^7.0.4"
+    "symfony/var-dumper": "^6.4.7 || ^7.0.4"
   },
   "autoload": {
     "psr-4": {

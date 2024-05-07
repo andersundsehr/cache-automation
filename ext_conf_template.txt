@@ -1,0 +1,14 @@
+# cat=basic; type=boolean; label=Metrics only: If enabled, only metrics will be collected (no cache will be cleared, no lifetime will be changed)
+metricsOnly = 1
+
+# cat=basic; type=boolean; label=Set cache lifetime from start and end times: If enabled, the cache lifetime will be set based on the start and end times of the record (will manipulate the SQL queries)
+setCacheLifetimeFromStartAndEndTimes = 1
+
+# cat=basic; type=boolean; label=Flush cache on uid: If enabled, the cache will be flushed when a used record is changed
+flushCacheOnUid = 1
+
+# cat=basic; type=boolean; label=Flush cache on new: If enabled, the cache will be flushed when a new record is created
+flushCacheOnNew = 1
+
+# cat=basic; type=boolean; label=Flush cache on conditional fields: If enabled, the cache will be flushed when a record is changed and a conditional field has changed (conditional field, see docs for more information)
+flushCacheOnConditionalField = 1

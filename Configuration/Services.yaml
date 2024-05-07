@@ -5,7 +5,9 @@ services:
     public: false
   AUS\CacheAutomation\:
     resource: '../Classes/*'
-    exclude: '../Classes/Domain/Model/*'
+  AUS\CacheAutomation\Hooks\:
+    resource: '../Classes/Hooks/*'
+    public: true
   AUS\CacheAutomation\Service\AutoCacheTagService:
     public: true
     arguments:

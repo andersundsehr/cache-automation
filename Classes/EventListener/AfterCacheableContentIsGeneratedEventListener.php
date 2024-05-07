@@ -7,10 +7,10 @@ namespace AUS\CacheAutomation\EventListener;
 //use AUS\CacheAutomation\Service\AutoCacheTagService;
 //use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
-//final class AfterCacheableContentIsGeneratedEventListener
-//{
+final class AfterCacheableContentIsGeneratedEventListener
+{
 //    public function __invoke(AfterCacheableContentIsGeneratedEvent $event): void
 //    {
 //        AutoCacheTagService::getSingleton()->trigger();
 //    }
-//}
+}

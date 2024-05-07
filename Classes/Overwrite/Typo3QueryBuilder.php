@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AUS\CacheAutomation\Overwrite;
 
+use AUS\CacheAutomation\Configuration;
 use AUS\CacheAutomation\Dto\SelectBy;
 use AUS\CacheAutomation\Dto\SqlParseResult;
 use AUS\CacheAutomation\Service\AutoCacheTagService;
@@ -77,13 +78,19 @@ final class Typo3QueryBuilder extends QueryBuilder
             // we can not look into the restriction container, because it is private. So we Build the Expressions and look for the fields
             $sqlPart = null;
 
-            $hiddenFieldName = $GLOBALS['TCA'][$queriedTable]['ctrl']['enablecolumns']['disabled'] ?? null;
-            if ($hiddenFieldName) {
-                // are the current restrictions using the hidden field?
-                $sqlPart = $this->restrictionContainer->buildExpression([$tableAlias => $queriedTable], $this->expr())->__toString();
-                if (str_contains($sqlPart, (string) $hiddenFieldName)) {
-                    $autoCacheTagService->addFieldUsage($queriedTable, $hiddenFieldName);
+            if (Configuration::get('flushCacheOnUid')) {
+                $hiddenFieldName = $GLOBALS['TCA'][$queriedTable]['ctrl']['enablecolumns']['disabled'] ?? null;
+                if ($hiddenFieldName) {
+                    // are the current restrictions using the hidden field?
+                    $sqlPart = $this->restrictionContainer->buildExpression([$tableAlias => $queriedTable], $this->expr())->__toString();
+                    if (str_contains($sqlPart, (string)$hiddenFieldName)) {
+                        $autoCacheTagService->addFieldUsage($queriedTable, $hiddenFieldName);
+                    }
                 }
+            }
+
+            if (!Configuration::get('setCacheLifetimeFromStartAndEndTimes')) {
+                continue;
             }
 
             $startTimeFieldName = $GLOBALS['TCA'][$queriedTable]['ctrl']['enablecolumns']['starttime'] ?? null;
@@ -94,7 +101,7 @@ final class Typo3QueryBuilder extends QueryBuilder
 
                 // are the current restrictions using the starttime field?
                 $sqlPart ??= $this->restrictionContainer->buildExpression([$tableAlias => $queriedTable], $this->expr())->__toString();
-                if (str_contains($sqlPart, (string) $startTimeFieldName)) {
+                if (str_contains($sqlPart, (string)$startTimeFieldName)) {
                     $filterBy['starttime'][] = $alias;
                     $autoCacheTagService->addFieldUsage($queriedTable, $startTimeFieldName);
                 }
